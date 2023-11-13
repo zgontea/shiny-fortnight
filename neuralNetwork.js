@@ -1,4 +1,5 @@
-import {multiply, subset, index, matrix, random, size, round} from "mathjs";
+import {multiply, subset, index, matrix, random} from "mathjs";
+import fs from 'fs'
 
 export default class NeuralNetwork {
     initialSize;
@@ -10,17 +11,16 @@ export default class NeuralNetwork {
 
     addLayer(count) {
         let layersCount = this.layers.length;
-        const previousLayerSize = layersCount ? size(this.layers[layersCount - 1])[0] : this.initialSize;
+        const previousLayerSize = layersCount ? this.layers[layersCount - 1].size()[0] : this.initialSize;
         let layer = [];
         for (let y = 0; y < count; y++) {
             let weights = []
             for (let x = 0; x < previousLayerSize; x++) {
                 weights.push(Number.parseFloat((random(-1000, 1000) / 1000).toFixed(4)));
             }
-            console.log(weights)
             layer.push(weights);
         }
-        this.layers.push(matrix(layer))
+        this.layers.push(matrix(layer));
     }
 
     predict(input) {
@@ -28,7 +28,9 @@ export default class NeuralNetwork {
     }
 
     loadWeights(fileName) {
-
+        const data = JSON.parse(fs.readFileSync('./weightsJson/' + fileName));
+        this.layers = [];
+        data.layers.forEach(layer => this.layers.push(matrix(layer)));
     }
 }
 
