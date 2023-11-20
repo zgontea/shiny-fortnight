@@ -1,4 +1,4 @@
-import {multiply, subset, index, matrix, random, flatten, subtract, kron, row} from "mathjs";
+import {multiply, subset, index, matrix, random, subtract, kron, column, reshape, size} from "mathjs";
 import fs from 'fs'
 
 export default class NeuralNetwork {
@@ -39,8 +39,8 @@ export default class NeuralNetwork {
 
         for (let i = 0; i < epochCount; i++) {
             let totalError = 0;
-            for (let s = 0; s < input.size()[0]; s++) {
-                let prediction = this.predict(row(input, s));
+            for (let s = 0; s < input.size()[1]; s++) {
+                let prediction = this.predict(column(input, s));
                 let delta = [];
 
                 output = prediction.toArray();
@@ -48,17 +48,17 @@ export default class NeuralNetwork {
                 let error = 0;
 
                 for (let d = 0; d < output.length; d++) {
-                    delta.push((2 / output.length) * (output[d] - expectedOutput[s][d]));
-                    error += (output[d] - expectedOutput[s][d]) * (output[d] - expectedOutput[s][d]);
+                    delta.push([(2 / output.length) * (output[d][0] - expectedOutput[d][s])]);
+                    error += (output[d][0] - expectedOutput[d][s]) * (output[d][0] - expectedOutput[d][s]);
                 }
 
                 error = error / output.length;
                 console.log("ERROR (EPOCH " + (i + 1) + "): " + error);
 
                 totalError += error;
-                if (epochCount === 999) console.log('TOTAL ERROR: ' + totalError);
+                if (i === 999) console.log('TOTAL ERROR: ' + totalError);
 
-                let outerProduct = multiply(kron(delta, input), alpha);
+                let outerProduct = multiply(alpha, reshape(kron(delta, column(input, s)), [output.length, column(input, s).size()[0]]));
                 this.layers[0] = subtract(this.layers[0], outerProduct);
             }
         }
